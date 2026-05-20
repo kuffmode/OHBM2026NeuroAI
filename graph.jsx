@@ -512,10 +512,13 @@ function ConnectomeGraph({
       // Compute focal world coord
       const c = s.coords[focusIdx] || [0, 0, 0];
       const fp = [c[0] - s.centroid[0], c[1] - s.centroid[1], c[2] - s.centroid[2]];
-      // Scale entire model by (1 + zp * K) and translate so focal point stays at origin
-      const scaleK = 1 + zp * 12.0; // dramatic blow-up
+      // Front-loaded easing (pow 0.7) so the early scroll gives visible feedback
+      // instead of the long "nothing → boom" feel of a pure linear ramp.
+      const zpEase = Math.pow(zp, 0.7);
+      // Scale entire model and translate so focal point stays at origin.
+      const scaleK = 1 + zpEase * 12.0;
       // Effective camera zoom incorporates user zoom + scroll
-      const effZoom = s.zoom * (1 + zp * 0.6);
+      const effZoom = s.zoom * (1 + zpEase * 0.6);
       t.camera.fov = 45 / effZoom;
       t.camera.updateProjectionMatrix();
 
@@ -528,9 +531,9 @@ function ConnectomeGraph({
         const p = [cc[0] - s.centroid[0], cc[1] - s.centroid[1], cc[2] - s.centroid[2]];
         const r = qApply(s.q, p);
         // World coords: scale around centroid, then shift so focal point goes to origin during zoom
-        const x = (r[0] - rotFocal[0] * zp) * scaleK;
-        const y = (r[1] - rotFocal[1] * zp) * scaleK;
-        const z = (r[2] - rotFocal[2] * zp) * scaleK;
+        const x = (r[0] - rotFocal[0] * zpEase) * scaleK;
+        const y = (r[1] - rotFocal[1] * zpEase) * scaleK;
+        const z = (r[2] - rotFocal[2] * zpEase) * scaleK;
         positions[i] = [x, y, z];
       }
 
@@ -547,10 +550,12 @@ function ConnectomeGraph({
         const u = sp.material.uniforms;
         let activeScale = 1.0;
         if (ser === 1) { u.color.value.setHex(0xF53A61); u.glow.value = 1.0; activeScale = 1.9; }
-        else if (ser === 2) { u.color.value.setHex(0xffffff); u.glow.value = 0.0; }
-        else { u.color.value.setHex(isFocus ? 0xF53A61 : 0xffffff); u.glow.value = 0.0; }
-        const focusGrow = isFocus ? (1 + zp * 18) : 1;
-        const r = baseR * focusGrow * activeScale;
+        else { u.color.value.setHex(0xffffff); u.glow.value = 0.0; }
+        // Node size scales with the model so non-focus nodes don't visually
+        // shrink as we zoom in. Focal node gets a small extra growth so it
+        // dominates the screen at zp=1.
+        const focusGrow = isFocus ? (1 + zpEase * 1.2) : 1;
+        const r = baseR * focusGrow * activeScale * scaleK;
         sp.scale.set(r, r, 1);
         let op = 1.0;
         if (!isFocus) op = Math.max(0, 1 - Math.max(0, zp - 0.55) / 0.35);
@@ -571,7 +576,9 @@ function ConnectomeGraph({
         dummy.position.set(pa[0], pa[1], pa[2]);
         dir.set(dx/dist, dy/dist, dz/dist);
         dummy.quaternion.setFromUnitVectors(up, dir);
-        const thick = 0.8 + Math.min(1.2, w / 5000);
+        // Scale edge thickness with the model so they don't visually
+        // thin out as positions spread apart during zoom.
+        const thick = (0.8 + Math.min(1.2, w / 5000)) * scaleK;
         dummy.scale.set(thick, dist, thick);
         dummy.updateMatrix();
         t.edgeMesh.setMatrixAt(ei, dummy.matrix);

@@ -7,7 +7,7 @@
 
 const PHASE = {
   A_END: 0.10,   // landing end
-  B_END: 0.22,   // zoom transition end
+  B_END: 0.32,   // zoom transition end (widened from 0.22 to give a longer, smoother ramp)
   C_END: 0.82,   // timeline end
   // D_END = 1.0
 };
@@ -49,7 +49,7 @@ function App() {
     const vh = window.innerHeight;
     const total =
       vh * 1.0 +                  // landing
-      vh * 1.4 +                  // zoom
+      vh * 3.6 +                  // zoom (widened so the network expands gradually instead of exploding)
       vh * 0.7 * schedule.length + // timeline slots
       vh * 1.4;                   // venue
     document.getElementById('ohb-scroller').style.height = total + 'px';
