@@ -1,0 +1,781 @@
+/* OHBM 26 workshop site — dark mode only, brutalist riso vibe. */
+
+:root {
+  --bg:            #0a0a0a;
+  --bg-2:          #050505;
+  --fg:            #f4f4f0;
+  --fg-dim:        rgba(244,244,240,0.55);
+  --fg-faint:      rgba(244,244,240,0.30);
+  --hairline:      rgba(244,244,240,0.18);
+  --hairline-soft: rgba(244,244,240,0.08);
+  --accent:        #F53A61;
+  --accent-2:      #4f9fff;
+  --fog-from:      rgba(10,10,10,0);
+  --fog-to:        rgba(10,10,10,1);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+html { background: var(--bg); }
+body[data-mode="dark"] {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-text);
+  overflow-x: hidden;
+}
+
+/* The whole site is a tall scroll container. */
+.ohb-scroller {
+  position: relative;
+  width: 100%;
+  /* total scroll height: landing(1vh) + zoom(150vh) + timeline(N slots*55vh) + venue(120vh).
+     Set in JS via inline style. */
+}
+
+/* Fixed viewport canvas where the network, info, and venue render. */
+.ohb-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* ── Graph layer ──────────────────────────────────────────────── */
+.ohb-graph {
+  position: absolute;
+  inset: 0;
+  will-change: transform, opacity;
+}
+
+/* Soft scrim sitting between the graph and the landing title.
+   The bottom ~46% of the viewport darkens toward solid bg so the
+   network always appears to dissolve before reaching the headline. */
+.ohb-title-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom,
+      rgba(10,10,10,0)   0%,
+      rgba(10,10,10,0)   40%,
+      rgba(10,10,10,0.6) 58%,
+      rgba(10,10,10,0.92) 72%,
+      rgba(10,10,10,1)   90%);
+  /* a very soft blur veil only over the title band — keeps brain visible above */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 38%, black 60%);
+          mask-image: linear-gradient(to bottom, transparent 38%, black 60%);
+  backdrop-filter: blur(2.5px);
+  -webkit-backdrop-filter: blur(2.5px);
+  transition: opacity 200ms linear;
+}
+@media (max-width: 760px) {
+  .ohb-title-scrim {
+    background:
+      linear-gradient(to bottom,
+        rgba(10,10,10,0)   0%,
+        rgba(10,10,10,0)   34%,
+        rgba(10,10,10,0.7) 50%,
+        rgba(10,10,10,0.95) 66%,
+        rgba(10,10,10,1)   84%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 30%, black 52%);
+            mask-image: linear-gradient(to bottom, transparent 30%, black 52%);
+  }
+}
+
+/* fog veils above & below */
+.ohb-fog-top, .ohb-fog-bot {
+  position: absolute;
+  left: 0; right: 0;
+  height: 22vh;
+  pointer-events: none;
+  z-index: 30;
+}
+.ohb-fog-top {
+  top: 0;
+  background: linear-gradient(to bottom, var(--fog-to), var(--fog-from));
+}
+.ohb-fog-bot {
+  bottom: 0;
+  background: linear-gradient(to top, var(--fog-to), var(--fog-from));
+}
+
+/* ── Title under landing graph ────────────────────────────────── */
+.ohb-landing {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  padding: 0 6vw 6vh;
+  pointer-events: none;
+}
+.ohb-landing-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  margin-bottom: 18px;
+  display: flex;
+  align-items: baseline;
+  gap: 24px;
+  pointer-events: auto;
+}
+.ohb-landing-kicker::before {
+  content: "▦"; color: var(--accent); font-size: 14px;
+}
+.ohb-landing-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(36px, 5.6vw, 84px);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  max-width: 1200px;
+  color: var(--fg);
+  margin: 0;
+  pointer-events: auto;
+}
+.ohb-landing-title .ohb-period { color: var(--accent); }
+.ohb-landing-meta {
+  margin-top: 22px;
+  display: flex;
+  gap: 36px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  pointer-events: auto;
+}
+.ohb-landing-meta b {
+  color: var(--fg);
+  font-weight: 500;
+}
+.ohb-scroll-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.ohb-scroll-hint .ohb-scroll-tick {
+  width: 1px; height: 24px;
+  background: linear-gradient(to bottom, var(--fg-faint), transparent);
+  animation: ohbTick 2.1s ease-in-out infinite;
+}
+@keyframes ohbTick {
+  0%, 100% { transform: scaleY(0.4); opacity: 0.3; transform-origin: top; }
+  50% { transform: scaleY(1); opacity: 1; }
+}
+
+/* Logo / topbar */
+.ohb-topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  pointer-events: none;
+}
+.ohb-topbar > * { pointer-events: auto; }
+.ohb-topbar .ohb-wordmark {
+  color: var(--fg);
+  font-weight: 500;
+}
+.ohb-topbar .ohb-wordmark .ohb-dot { color: var(--accent); }
+.ohb-topbar .ohb-progress {
+  display: flex; align-items: center; gap: 10px;
+}
+.ohb-topbar .ohb-progress-bar {
+  width: 140px; height: 1px;
+  background: var(--hairline);
+  position: relative;
+  overflow: hidden;
+}
+.ohb-topbar .ohb-progress-bar i {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--accent);
+}
+
+/* ── Report panel (perturbation) ─────────────────────────────── */
+.ohb-report {
+  position: fixed;
+  right: 24px;
+  top: 60px;
+  width: 300px;
+  background: rgba(10,10,10,0.78);
+  border: 1px solid var(--hairline);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 60;
+  font-family: var(--font-mono);
+  color: var(--fg);
+  transition: opacity 240ms ease;
+}
+.ohb-report.is-min {
+  width: 200px;
+}
+.ohb-report-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ohb-report.is-min .ohb-report-head { border-bottom: 0; }
+.ohb-report-title { display: flex; align-items: center; gap: 8px; color: var(--fg); }
+.ohb-report-dot {
+  width: 7px; height: 7px; background: var(--accent);
+  display: inline-block;
+  animation: ohbBlink 1.4s ease-in-out infinite;
+}
+@keyframes ohbBlink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.ohb-report-controls { display: flex; gap: 4px; }
+.ohb-report-btn {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  color: var(--fg);
+  width: 22px; height: 22px;
+  line-height: 18px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+.ohb-report-btn:hover { background: var(--fg); color: var(--bg); }
+.ohb-report-body { padding: 12px 12px 10px; }
+.ohb-report-stats {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 10px;
+}
+.ohb-stat-label {
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  margin-bottom: 2px;
+}
+.ohb-stat-value {
+  font-size: 26px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+.ohb-stat-sub { font-size: 13px; color: var(--fg-dim); margin-left: 4px; }
+.ohb-report-canvas {
+  width: 100%; height: 50px;
+  display: block;
+  border-top: 1px solid var(--hairline-soft);
+  border-bottom: 1px solid var(--hairline-soft);
+}
+.ohb-report-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.ohb-report-kick {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ohb-report-kick:hover { background: var(--accent); color: var(--bg); }
+
+/* ── Timeline page ────────────────────────────────────────────── */
+.ohb-timeline-page {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+}
+.ohb-section-label {
+  position: absolute;
+  top: 64px;
+  left: 24px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+
+/* Timeline left column */
+.ohb-timeline-col {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 7vw;
+  width: 260px;
+  overflow: visible;
+  pointer-events: auto;
+}
+.ohb-timeline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform;
+  transition: transform 120ms linear;
+}
+.ohb-spine {
+  position: absolute;
+  left: 44px;
+  top: 0;
+  width: 1px;
+  background: var(--hairline);
+}
+.ohb-hour-tick {
+  position: absolute;
+  left: 30px;
+  width: 28px;
+  height: 1px;
+  background: var(--hairline-soft);
+}
+.ohb-hour-label {
+  position: absolute;
+  left: -68px;
+  top: -8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--fg-faint);
+}
+
+.ohb-slot {
+  position: absolute;
+  left: 0;
+  width: 240px;
+}
+.ohb-circle {
+  position: absolute;
+  left: 30px;
+  top: -14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--fg-dim);
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 320ms cubic-bezier(.2,.7,.2,1),
+              height 320ms cubic-bezier(.2,.7,.2,1),
+              left 320ms cubic-bezier(.2,.7,.2,1),
+              top 320ms cubic-bezier(.2,.7,.2,1),
+              border-color 240ms ease,
+              background 240ms ease;
+}
+.ohb-circle:hover {
+  border-color: var(--accent);
+}
+.ohb-circle-idx {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-dim);
+  letter-spacing: 0.05em;
+}
+.ohb-circle.is-active {
+  width: 84px;
+  height: 84px;
+  left: 2px;
+  top: -42px;
+  border-width: 2px;
+  border-color: var(--accent);
+  background: var(--bg);
+  box-shadow: 0 0 0 6px rgba(245,58,97,0.06);
+}
+.ohb-circle.is-active .ohb-circle-idx {
+  font-size: 18px;
+  color: var(--accent);
+  font-family: var(--font-display);
+}
+.ohb-bar {
+  position: absolute;
+  left: 43.5px;
+  top: 0;
+  width: 2px;
+  background: var(--fg-dim);
+  opacity: 0.5;
+}
+.ohb-slot.is-active .ohb-bar {
+  background: var(--accent);
+  opacity: 1;
+  width: 3px;
+  left: 43px;
+}
+.ohb-end-dash {
+  position: absolute;
+  left: 36px;
+  width: 16px;
+  height: 1px;
+  background: var(--fg-dim);
+}
+.ohb-slot.is-active .ohb-end-dash {
+  background: var(--accent);
+  height: 1.5px;
+}
+.ohb-time-label {
+  position: absolute;
+  left: 70px;
+  top: -8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--fg-dim);
+  letter-spacing: 0.04em;
+}
+.ohb-slot.is-active .ohb-time-label { color: var(--accent); }
+.ohb-time-end { color: var(--fg-faint); }
+.ohb-slot.is-active .ohb-time-end { color: var(--fg-dim); }
+.ohb-mini-name {
+  position: absolute;
+  left: 122px;
+  top: -10px;
+  width: 180px;
+  font-family: var(--font-text);
+  font-size: 13px;
+  color: var(--fg-dim);
+  opacity: 0.6;
+  pointer-events: none;
+  transition: opacity 240ms ease;
+}
+.ohb-slot.is-active .ohb-mini-name {
+  opacity: 0;
+}
+
+/* Right-side info panel */
+.ohb-info-col {
+  position: absolute;
+  top: 18vh;
+  right: 6vw;
+  width: min(640px, 50vw);
+  pointer-events: auto;
+}
+.ohb-info {
+  animation: ohbInfoIn 360ms cubic-bezier(.2,.7,.2,1);
+}
+@keyframes ohbInfoIn {
+  from { opacity: 0; transform: translateY(14px); filter: blur(3px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+}
+.ohb-info-time {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.ohb-info-name {
+  font-family: var(--font-text);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--fg-dim);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+.ohb-info-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(28px, 3.4vw, 52px);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  margin: 0 0 22px 0;
+  color: var(--fg);
+  text-wrap: balance;
+}
+.ohb-info-abstract {
+  font-family: var(--font-text);
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgba(244,244,240,0.78);
+  margin: 0 0 24px 0;
+  max-width: 56ch;
+}
+.ohb-info-meta {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+.ohb-info-meta-sep { color: var(--accent); }
+
+/* ── Venue ─────────────────────────────────────────────────────── */
+.ohb-venue {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  background: var(--bg);
+  pointer-events: auto;
+  will-change: transform, opacity;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ohb-venue-inner {
+  width: min(1100px, 90vw);
+  padding: 80px 0;
+}
+.ohb-venue-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 22px;
+}
+.ohb-venue-title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(32px, 4.6vw, 72px);
+  line-height: 1.0;
+  letter-spacing: -0.02em;
+  color: var(--fg);
+  margin: 0 0 48px 0;
+  max-width: 18ch;
+  text-wrap: balance;
+}
+.ohb-venue-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  padding: 28px 0;
+  margin-bottom: 32px;
+}
+.ohb-venue-meta-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  margin-bottom: 6px;
+}
+.ohb-venue-meta-value {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 1.4vw, 22px);
+  color: var(--fg);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.ohb-venue-blurb {
+  font-family: var(--font-text);
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(244,244,240,0.78);
+  max-width: 64ch;
+  margin: 0 0 40px 0;
+}
+.ohb-venue-cta {
+  display: flex; align-items: center; gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 80px;
+}
+.ohb-btn-register {
+  display: inline-block;
+  border: 2px solid var(--fg);
+  background: transparent;
+  color: var(--fg);
+  padding: 14px 26px;
+  font-family: var(--font-text);
+  font-size: 20px;
+  text-decoration: none;
+  letter-spacing: -0.005em;
+  transition: background 80ms linear, color 80ms linear, border-color 80ms linear;
+}
+.ohb-btn-register:hover {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.ohb-venue-note {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+.ohb-venue-bottom {
+  display: flex; justify-content: space-between;
+  border-top: 1px solid var(--hairline);
+  padding-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+}
+
+/* ── Tweaks panel hook (very small) ───────────────────────────── */
+.ohb-instructions {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  z-index: 55;
+  text-align: right;
+  pointer-events: none;
+}
+.ohb-instructions b { color: var(--fg-dim); font-weight: 500; }
+
+/* ── Mobile ───────────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  /* Topbar: drop the long suffix, slim the progress bar */
+  .ohb-topbar { padding: 12px 14px; font-size: 10.5px; }
+  .ohb-wordmark-suffix { display: none; }
+  .ohb-topbar .ohb-progress { gap: 8px; }
+  .ohb-topbar .ohb-progress-bar { width: 60px; }
+  #ohb-progress-label { max-width: 14ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .ohb-instructions { display: none; }
+
+  /* Landing */
+  .ohb-landing { padding: 0 20px 28px; }
+  .ohb-landing-kicker { font-size: 10.5px; gap: 14px; margin-bottom: 14px; }
+  .ohb-landing-title { font-size: clamp(28px, 8vw, 42px); }
+  .ohb-landing-meta { gap: 12px 18px; font-size: 11px; margin-top: 16px; }
+
+  /* Report panel (kept for parity even though it isn't rendered today) */
+  .ohb-report { width: calc(100vw - 28px); right: 14px; top: 50px; }
+  .ohb-report.is-min { width: 180px; }
+
+  /* Section label sits just under the topbar */
+  .ohb-section-label { top: 44px; left: 14px; font-size: 10px; }
+
+  /* Timeline column: narrower, with the spine at x = 17px (28-wide circle
+     centered on it: left=3, half=14 → center=17). Active circle uses width
+     52px and left=-9 so its centre lands on the spine too. */
+  .ohb-timeline-col { left: 14px; width: 48px; }
+  .ohb-spine { left: 17px; }
+  .ohb-hour-tick { left: 5px; width: 24px; }
+  .ohb-hour-label { display: none; }
+  .ohb-circle { left: 3px; width: 28px; height: 28px; top: -14px; }
+  .ohb-circle.is-active {
+    width: 52px; height: 52px;
+    left: -9px; top: -26px;
+  }
+  .ohb-circle.is-active .ohb-circle-idx { font-size: 15px; }
+  .ohb-bar { left: 16.5px; }
+  .ohb-slot.is-active .ohb-bar { left: 16px; }
+  .ohb-end-dash { left: 10px; width: 14px; }
+
+  /* Time labels: keep them out of the expanded circle.
+     Idle: sits at x=44, top=-8. Active: shift right + below the larger circle. */
+  .ohb-time-label {
+    left: 44px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .ohb-slot.is-active .ohb-time-label {
+    left: 50px;
+    top: 20px;
+    font-size: 11px;
+  }
+  /* End-time label position is set inline via JS (relative to the slot top).
+     Don't override its top here — only restyle the appearance. */
+  .ohb-mini-name { display: none; }
+
+  /* Info column: anchor near the top, take the remaining width
+     to the right of the timeline column. Add right padding so text
+     doesn't collide with the screen edge. */
+  .ohb-info-col {
+    top: 13vh;
+    left: 88px;
+    right: 16px;
+    bottom: auto;
+    width: auto;
+    max-height: 80vh;
+    overflow: hidden;
+  }
+  .ohb-info-time { font-size: 10.5px; margin-bottom: 6px; }
+  .ohb-info-name { font-size: 13.5px; margin-bottom: 4px; }
+  .ohb-info-title {
+    font-size: clamp(20px, 6vw, 28px);
+    line-height: 1.06;
+    margin-bottom: 16px;
+  }
+  .ohb-info-abstract {
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin-bottom: 14px;
+    max-width: none;
+  }
+  .ohb-info-meta { font-size: 10px; letter-spacing: 0.1em; }
+
+  /* Venue: align to top so the title isn't clipped behind the topbar.
+     Inner becomes scrollable inside the fixed stage. */
+  .ohb-venue { align-items: flex-start; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .ohb-venue-inner {
+    width: 100%;
+    padding: 70px 18px 40px;
+  }
+  .ohb-venue-kicker { font-size: 10.5px; letter-spacing: 0.2em; margin-bottom: 14px; }
+  .ohb-venue-title {
+    font-size: clamp(28px, 8vw, 40px);
+    line-height: 1.02;
+    margin-bottom: 28px;
+    max-width: 100%;
+  }
+  .ohb-venue-meta {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 18px 0;
+    margin-bottom: 22px;
+  }
+  .ohb-venue-meta-label { font-size: 10px; }
+  .ohb-venue-meta-value { font-size: 17px; line-height: 1.3; }
+  .ohb-venue-blurb { font-size: 14.5px; line-height: 1.55; margin-bottom: 26px; }
+  .ohb-venue-cta { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 40px; }
+  .ohb-btn-register { font-size: 17px; padding: 12px 18px; text-align: center; }
+  .ohb-venue-note { font-size: 10.5px; }
+  .ohb-venue-bottom { flex-direction: column; gap: 6px; font-size: 10px; }
+}
+
+/* Very narrow phones (<=380px): a few extra trims so nothing overflows. */
+@media (max-width: 380px) {
+  .ohb-topbar .ohb-progress-bar { width: 44px; }
+  .ohb-landing-title { font-size: 26px; }
+  .ohb-info-col { left: 84px; }
+  .ohb-info-title { font-size: 20px; }
+}

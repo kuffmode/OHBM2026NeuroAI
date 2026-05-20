@@ -1,0 +1,296 @@
+/* =============================================================
+   Kayson Fakhar — Brand Tokens
+   Colors, type, and semantic styles.
+   The site reads like a risograph zine: black ink on paper,
+   magenta + cyan halftone print accents, sharp corners.
+   ============================================================= */
+
+/* ---------- Fonts ---------- */
+@font-face {
+  font-family: "Hagrid";
+  src: url("./fonts/Hagrid-Regular.ttf") format("truetype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Hagrid";
+  src: url("./fonts/Hagrid-Italic.ttf") format("truetype");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "Hagrid";
+  src: url("./fonts/Hagrid-Bold.ttf") format("truetype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "Hagrid";
+  src: url("./fonts/Hagrid-Light.ttf") format("truetype");
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("./fonts/IBMPlexSans-Light.ttf") format("truetype");
+  font-weight: 300; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("./fonts/IBMPlexSans-Regular.ttf") format("truetype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("./fonts/IBMPlexSans-Italic.ttf") format("truetype");
+  font-weight: 400; font-style: italic; font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("./fonts/IBMPlexSans-Medium.ttf") format("truetype");
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("./fonts/IBMPlexSans-Bold.ttf") format("truetype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./fonts/IBMPlexMono-Regular.ttf") format("truetype");
+  font-weight: 400; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("./fonts/IBMPlexMono-Bold.ttf") format("truetype");
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+
+/* ---------- Tokens ---------- */
+:root {
+  /* Color — base */
+  --color-paper:       #FFFFFF;
+  --color-paper-cream: #FAF9F5;
+  --color-ink:         rgba(0, 0, 0, 0.85);
+  --color-ink-pure:    #000000;
+  --color-ink-soft:    #141413;
+  --color-muted:       #808080;
+  --color-hairline:    rgba(0, 0, 0, 0.2);
+
+  /* Color — print process accents */
+  --color-riso-magenta: #F53A61;   /* Hot Pink — primary accent / link */
+  --color-riso-cyan:    #004992;   /* Print Blue — secondary accent / link */
+
+  /* Semantic color */
+  --bg:           var(--color-paper);
+  --bg-cream:     var(--color-paper-cream);
+  --fg1:          var(--color-ink);          /* default body */
+  --fg2:          var(--color-muted);        /* muted/captions */
+  --fg-display:   var(--color-ink-pure);     /* hero headlines */
+  --link:         var(--color-riso-magenta); /* primary inline link */
+  --link-alt:     var(--color-riso-cyan);    /* secondary link */
+  --hover:        var(--color-ink-pure);     /* hover darkens to pure black */
+  --rule:         var(--color-hairline);
+  --selection:    var(--color-riso-magenta);
+
+  /* Blog post metadata box */
+  --color-metadata-bg: rgba(245, 58, 97, 0.03);
+
+  /* Typography — families */
+  --font-display: "Hagrid", "Times New Roman", serif;
+  --font-text:    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-mono:    "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Typography — scale (desktop) */
+  --fs-display-xl: 77px;    /* hero */
+  --fs-display-lg: 50px;    /* page title */
+  --fs-display-md: 36px;    /* section title */
+  --fs-h2:         28px;
+  --fs-subhead:    23px;    /* inline section labels (bold) */
+  --fs-body-lg:    25px;    /* lead paragraph */
+  --fs-body:       22px;    /* default body */
+  --fs-button:     22px;
+  --fs-small:      17px;
+  --fs-caption:    14.5px;
+
+  --lh-display: 1.0;
+  --lh-tight:   1.15;
+  --lh-body:    1.55;
+
+  --tracking-tight:  -0.01em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+
+  /* Borders */
+  --border-button:   2px solid var(--color-ink);
+  --border-hairline: 1px solid var(--color-hairline);
+  --radius:          0px;             /* sharp corners always */
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 40px;
+  --space-6: 64px;
+  --space-7: 96px;
+  --space-8: 128px;
+
+  /* Layout */
+  --content-max:   720px;
+  --gutter:        var(--space-5);
+}
+
+/* ---------- Base ---------- */
+html { font-size: 16px; }
+
+body {
+  background: var(--bg);
+  color: var(--fg1);
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--selection); color: var(--color-paper); }
+
+/* ---------- Semantic type ---------- */
+.h-display, h1.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-display-xl);
+  line-height: var(--lh-display);
+  color: var(--fg-display);
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-display-lg);
+  line-height: var(--lh-display);
+  color: var(--fg-display);
+  margin: 0 0 var(--space-5);
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--fs-display-md);
+  line-height: var(--lh-tight);
+  color: var(--fg-display);
+  margin: 0 0 var(--space-4);
+}
+
+h3, .subhead {
+  font-family: var(--font-text);
+  font-weight: 700;
+  font-size: var(--fs-subhead);
+  line-height: var(--lh-tight);
+  color: var(--fg1);
+  margin: 0 0 var(--space-3);
+}
+
+/* ▦ halftone-square bullet preceding bold subheads */
+h3::before, .subhead::before {
+  content: "▦";
+  display: inline-block;
+  margin-right: 0.5em;
+  color: var(--color-riso-magenta);
+  font-size: 0.85em;
+  transform: translateY(-0.05em);
+}
+
+p {
+  font-family: var(--font-text);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  margin: 0 0 var(--space-4);
+  text-wrap: pretty;
+}
+
+p.lead {
+  font-size: var(--fs-body-lg);
+  line-height: 1.5;
+}
+
+small, .caption {
+  font-size: var(--fs-caption);
+  color: var(--fg2);
+  line-height: 1.45;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 80ms linear;
+}
+a:hover { color: var(--hover); }
+a.alt { color: var(--link-alt); }
+
+code, kbd, pre, samp {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+hr {
+  border: 0;
+  border-top: var(--border-hairline);
+  margin: var(--space-5) 0;
+}
+
+/* ---------- Components ---------- */
+.btn {
+  display: inline-block;
+  background: var(--color-paper);
+  color: var(--fg1);
+  font-family: var(--font-text);
+  font-size: var(--fs-button);
+  font-weight: 400;
+  line-height: 1.2;
+  padding: 9px 13px;
+  border: var(--border-button);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 80ms linear, color 80ms linear;
+}
+.btn:hover { background: var(--color-ink); color: var(--color-paper); }
+.btn:active { transform: translateY(1px); }
+.btn--accent { color: var(--color-riso-magenta); }
+.btn--accent:hover { background: var(--color-riso-magenta); color: var(--color-paper); border-color: var(--color-riso-magenta); }
+
+ul.zine-list { list-style: none; padding-left: 0; }
+ul.zine-list li {
+  position: relative;
+  padding-left: 1.6em;
+  margin-bottom: var(--space-2);
+}
+ul.zine-list li::before {
+  content: "▦";
+  position: absolute;
+  left: 0;
+  color: var(--color-riso-magenta);
+  font-size: 0.9em;
+}
+
+/* ---------- Dark-mode token overrides ----------
+   The base tokens above bake in pure-black ink for headings and links;
+   re-pointing them at light values when [data-mode="dark"] keeps every
+   `var(--fg-…)` consumer (h1/h2/h3/hr/buttons) readable on the dark page.
+*/
+body[data-mode="dark"] {
+  --bg:               #0a0a0a;
+  --color-ink:        rgba(244, 244, 240, 0.92);
+  --color-ink-pure:   #f4f4f0;
+  --color-ink-soft:   #f4f4f0;
+  --color-hairline:   rgba(244, 244, 240, 0.2);
+  --fg1:              rgba(244, 244, 240, 0.92);
+  --fg2:              rgba(244, 244, 240, 0.55);
+  --fg-display:       #f4f4f0;
+  --hover:            #f4f4f0;
+  --rule:             rgba(244, 244, 240, 0.2);
+  --border-button:    2px solid rgba(244, 244, 240, 0.92);
+  --color-metadata-bg: rgba(245, 58, 97, 0.08);
+}
