@@ -15,18 +15,34 @@ const PHASE = {
 function useScroll() {
   const [p, setP] = React.useState(0);
   React.useEffect(() => {
-    const onScroll = () => {
+    let rafId = 0;
+    let pending = false;
+    const compute = () => {
+      pending = false;
       const sc = document.documentElement;
       const max = sc.scrollHeight - window.innerHeight;
-      const p = Math.max(0, Math.min(1, window.scrollY / Math.max(1, max)));
-      setP(p);
+      const np = Math.max(0, Math.min(1, window.scrollY / Math.max(1, max)));
+      setP(np);
     };
-    onScroll();
+    const onScroll = () => {
+      if (pending) return;
+      pending = true;
+      rafId = requestAnimationFrame(compute);
+    };
+    // Debounce resize so iOS URL-bar show/hide during a swipe doesn't fire repeatedly.
+    let resizeTimer = 0;
+    const onResize = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(compute, 150);
+    };
+    compute();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', onResize);
     return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(resizeTimer);
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', onResize);
     };
   }, []);
   return p;
@@ -44,15 +60,37 @@ function App() {
   }, []);
 
   // Set scroller height: enough room for landing(100vh) + zoom(120vh) + 12 talks*70vh + venue(140vh)
+  // Recomputes only on orientation change / large width changes, not on every iOS URL-bar
+  // collapse — otherwise the scroll mapping jumps mid-swipe and the page jitters.
   React.useEffect(() => {
     if (!schedule.length) return;
-    const vh = window.innerHeight;
-    const total =
-      vh * 1.0 +                  // landing
-      vh * 3.6 +                  // zoom (widened so the network expands gradually instead of exploding)
-      vh * 0.7 * schedule.length + // timeline slots
-      vh * 1.4;                   // venue
-    document.getElementById('ohb-scroller').style.height = total + 'px';
+    const setHeight = (vh) => {
+      const total =
+        vh * 1.0 +                  // landing
+        vh * 3.6 +                  // zoom (widened so the network expands gradually instead of exploding)
+        vh * 0.7 * schedule.length + // timeline slots
+        vh * 1.4;                   // venue
+      document.getElementById('ohb-scroller').style.height = total + 'px';
+    };
+    let lastW = window.innerWidth;
+    let baseVh = window.innerHeight;
+    setHeight(baseVh);
+    const onResize = () => {
+      const w = window.innerWidth;
+      // Only react to width changes (rotation, real resize) — ignore height-only
+      // changes (iOS toolbar show/hide) which would otherwise re-map scroll mid-swipe.
+      if (w !== lastW) {
+        lastW = w;
+        baseVh = window.innerHeight;
+        setHeight(baseVh);
+      }
+    };
+    window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('orientationchange', onResize);
+    };
   }, [schedule]);
 
   const scrollP = useScroll();

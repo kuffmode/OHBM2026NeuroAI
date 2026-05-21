@@ -16,12 +16,21 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-html { background: var(--bg); }
+html {
+  background: var(--bg);
+  /* Stop iOS rubber-band overscroll from firing extra scroll events
+     that desync the fixed stage during a swipe. */
+  overscroll-behavior: none;
+}
 body[data-mode="dark"] {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-text);
   overflow-x: hidden;
+  overscroll-behavior: none;
+  /* Disable the browser's default touch gestures (pinch-zoom, double-tap zoom)
+     that can interfere with the swipe-driven scroll feel. Vertical pan only. */
+  touch-action: pan-y;
 }
 
 /* The whole site is a tall scroll container. */
