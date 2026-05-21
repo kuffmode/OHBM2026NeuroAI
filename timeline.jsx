@@ -44,12 +44,11 @@ function TimelineColumn({ slots, scrollProgress, dayStart, dayEnd, activeIdx }) 
   const PX_PER_MIN = 8; // 8 hours * 60 * 8 = 3840px tall track. We translate by progress.
   const totalMin = dayEnd - dayStart;
   const trackHeight = totalMin * PX_PER_MIN;
-  // Focus line is at 32% from top of viewport
-  // We want the active speaker's circle to sit at focus line.
-  // So translateY = focusY - circleY(active)
-  // Without progress, the active speaker is chosen from progress directly.
-  // progress 0..1 maps to currentTime 0..(totalMin) plus a little buffer
-  const focusY = window.innerHeight * 0.36;
+  // Focus line is at 32% from top of viewport. Use the stable viewport height
+  // (frozen at load by app.jsx) so iOS URL-bar show/hide during a swipe doesn't
+  // shift the focus line and make the whole track jump.
+  const vh = window.__ohbStableVh || window.innerHeight;
+  const focusY = vh * 0.36;
   // Current "time-cursor" follows progress between first slot's start and last slot's end
   const firstStart = slots[0].start;
   const lastEnd = slots[slots.length - 1].end;

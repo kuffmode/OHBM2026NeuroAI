@@ -74,6 +74,7 @@ function App() {
     };
     let lastW = window.innerWidth;
     let baseVh = window.innerHeight;
+    window.__ohbStableVh = baseVh;
     setHeight(baseVh);
     const onResize = () => {
       const w = window.innerWidth;
@@ -82,6 +83,7 @@ function App() {
       if (w !== lastW) {
         lastW = w;
         baseVh = window.innerHeight;
+        window.__ohbStableVh = baseVh;
         setHeight(baseVh);
       }
     };
