@@ -139,7 +139,7 @@ function TimelinePage({ slots, progress, dayStart, dayEnd }) {
       <div className="ohb-info-col">
         <InfoPanel slots={slots} activeIdx={activeIdx} />
       </div>
-      <div className="ohb-section-label">Programme · 13 June 2026</div>
+      <div className="ohb-section-label">Programme · 14 June 2026</div>
     </div>
   );
 }
@@ -151,7 +151,7 @@ function VenuePage({ visibility = 0 }) {
   return (
     <div className="ohb-venue" style={{ transform: `translateY(${translate}%)`, opacity: visibility }}>
       <div className="ohb-venue-inner">
-        <div className="ohb-venue-kicker">VENUE · 13 JUNE 2026</div>
+        <div className="ohb-venue-kicker">VENUE · 14 JUNE 2026</div>
         <h1 className="ohb-venue-title">Promises &amp; perils of connectome-constrained neuro-AI models.</h1>
         <div className="ohb-venue-meta">
           <div>
@@ -160,7 +160,7 @@ function VenuePage({ visibility = 0 }) {
           </div>
           <div>
             <div className="ohb-venue-meta-label">when</div>
-            <div className="ohb-venue-meta-value">Saturday 13 June 2026 · 09:00 – 17:30 · Room F</div>
+            <div className="ohb-venue-meta-value">Saturday 14 June 2026 · 09:00 – 17:30 · Room F</div>
           </div>
           <div>
             <div className="ohb-venue-meta-label">format</div>

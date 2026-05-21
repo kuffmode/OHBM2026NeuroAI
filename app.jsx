@@ -169,7 +169,7 @@ function App() {
         transform: `translateY(${titleY}px)`,
       }}>
         <div>
-          <div className="ohb-landing-kicker">OHBM 2026 · workshop · 13 june</div>
+          <div className="ohb-landing-kicker">OHBM 2026 · workshop · 14 june</div>
           <h1 className="ohb-landing-title">
             Promises &amp; perils of<br/>
             connectome-constrained<br/>
