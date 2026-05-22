@@ -177,7 +177,7 @@ function App() {
           </h1>
           <div className="ohb-landing-meta">
             <span><b>Full-day workshop</b></span>
-            <span><b>10 talks</b></span>
+            <span><b>9 talks</b></span>
             <span><b>90 min hackathon</b></span>
             <span><b>09:00 — 17:30</b></span>
           </div>
