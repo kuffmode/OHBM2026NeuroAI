@@ -160,11 +160,11 @@ function VenuePage({ visibility = 0 }) {
           </div>
           <div>
             <div className="ohb-venue-meta-label">when</div>
-            <div className="ohb-venue-meta-value">Saturday 14 June 2026 · 09:00 – 17:30 · Room F</div>
+            <div className="ohb-venue-meta-value">Sunday 14 June 2026 · 09:00 – 17:30 · Room F</div>
           </div>
           <div>
             <div className="ohb-venue-meta-label">format</div>
-            <div className="ohb-venue-meta-value">In-person workshop · 10 talks &amp; panel</div>
+            <div className="ohb-venue-meta-value">In-person workshop · 9 talks &amp; panel</div>
           </div>
         </div>
         <p className="ohb-venue-blurb">
