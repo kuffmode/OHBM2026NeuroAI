@@ -40,7 +40,7 @@ This talk provides a non-technical introduction to neuromorphic computing and it
 This talk concludes the series on neuromorphic computing by providing integrative examples where structure and function is studied. It illustrates a few pitfalls and challenges that are yet to solve while discussing ways it can be further developed.
 
 ## 12:15 – 12:45 · Joao Barbosa
-### Normative modelling with brain-inspired recurrent neural networks
+### Inferring flexible neural architectures using data-driven RNNs
 
 Flexible decision-making is often attributed to prefrontal control, yet recent work shows that task-relevant information is distributed across many regions. Using population analyses and data-constrained recurrent networks applied to a multi-region monkey dataset, we identify region-specific computations that standard decoding misses. Sensory areas show higher internal than communicated dimensionality, whereas frontal regions transmit most of what they compute. Dimensionality decreases along the hierarchy, indicating increasingly abstract transformations. In-silico perturbations reveal that choices emerge from strengthened cross-regional interactions, while sensory encoding remains stable and bottom-up. These results show that even when information is widespread, distinct regions perform specialized transformations during flexible decisions.
 
