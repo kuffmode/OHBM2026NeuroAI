@@ -34,7 +34,7 @@ Stretch, refill, and find a seat for the next block.
 
 This talk provides a non-technical introduction to neuromorphic computing and its essential ingredients. It then showcases examples of how to incorporate different biological constraints and how to interpret the results.
 
-## 11:45 – 12:15 · Petra E. Vértes
+## 11:45 – 12:15 · Iva Ilioska
 ### Reservoir computing as a window into structure–function relationships in neural systems
 
 This talk concludes the series on neuromorphic computing by providing integrative examples where structure and function is studied. It illustrates a few pitfalls and challenges that are yet to solve while discussing ways it can be further developed.
